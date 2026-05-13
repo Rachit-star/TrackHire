@@ -1,0 +1,42 @@
+.container {
+  padding: 32px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 16px;
+  background-color: #2a2a2a;
+  color: #FF6B00;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a2a;
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+.table tr:hover td {
+  background-color: #2a2a2a;
+}
