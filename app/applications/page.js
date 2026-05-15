@@ -30,7 +30,7 @@ const applications = [
     role: "Web Dev",
     platform: "Careers Site",
     date_applied: "2026-01-20",
-    status: "Applied"
+    status: "Interviewing"
   },
   {
     id: 2,
@@ -46,7 +46,15 @@ const applications = [
     role: "Research Intern",
     platform: "Web Portal",
     date_applied: "2026-01-20",
-    status: "Applied"
+    status: "Offer"
+  },
+  {
+    id:4,
+    company:"TOSH",
+    role: "Web Dev",
+    platform: "Seniors",
+    date_applied:"2026-05-04",
+    status:"Offer"
   }
 ]
 
