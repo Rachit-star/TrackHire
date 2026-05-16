@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { createClient } from '../lib/supabase'
 import AddApplicationForm from '../components/AddApplicationForm'
 
 function getDaysWaiting(dateApplied) {
@@ -31,6 +32,21 @@ export default function ApplicationsClient({ applications, styles }) {
     router.refresh()
   }
 
+  async function handleDelete(id) {
+    const supabase = createClient()
+    await supabase.from('applications').delete().eq('id', id)
+    router.refresh()
+  }
+
+  async function handleStatusChange(id, newStatus) {
+    const supabase = createClient()
+    await supabase
+      .from('applications')
+      .update({ status: newStatus })
+      .eq('id', id)
+    router.refresh()
+  }
+
   return (
     <>
       <AddApplicationForm onAdd={handleAdd} />
@@ -43,6 +59,7 @@ export default function ApplicationsClient({ applications, styles }) {
             <th>Date Applied</th>
             <th>Days Waiting</th>
             <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -56,16 +73,39 @@ export default function ApplicationsClient({ applications, styles }) {
                 {getDaysWaiting(app.date_applied)} days
               </td>
               <td>
-                <span style={{
-                  backgroundColor: getStatusColor(app.status),
-                  color: '#fff',
-                  padding: '4px 12px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}>
-                  {app.status}
-                </span>
+                <select
+                  value={app.status}
+                  onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                  style={{
+                    backgroundColor: getStatusColor(app.status),
+                    color: '#fff',
+                    border: 'none',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="Applied">Applied</option>
+                  <option value="Interviewing">Interviewing</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Offer">Offer</option>
+                </select>
+              </td>
+              <td>
+                <button
+                  onClick={() => handleDelete(app.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#f44336',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
