@@ -18,8 +18,15 @@ export default async function Inbox() {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const accessToken = session?.provider_token
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: tokenData } = await supabase
+    .from('user_tokens')
+    .select('access_token')
+    .eq('user_id', user.id)
+    .single()
+
+  const accessToken = tokenData?.access_token
 
   return (
     <div className={styles.container}>

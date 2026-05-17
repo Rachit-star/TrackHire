@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  
+
   let response = NextResponse.redirect(new URL('/dashboard', request.url))
 
   if (code) {
@@ -24,7 +24,18 @@ export async function GET(request) {
         }
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+
+    const { data } = await supabase.auth.exchangeCodeForSession(code)
+    
+    // Store the provider token in the database
+    if (data.session?.provider_token) {
+      await supabase
+        .from('user_tokens')
+        .upsert({
+          user_id: data.session.user.id,
+          access_token: data.session.provider_token
+        })
+    }
   }
 
   return response
