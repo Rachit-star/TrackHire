@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import styles from './inbox.module.css'
 
-export default function InboxClient({ accessToken, userId, applications }) {
+export default function InboxClient({ accessToken, userId }) {
   const [emails, setEmails] = useState([])
   const [loading, setLoading] = useState(false)
   const [scanned, setScanned] = useState(false)
@@ -13,7 +12,7 @@ export default function InboxClient({ accessToken, userId, applications }) {
     const res = await fetch('/api/gmail/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accessToken, userId, applications })
+      body: JSON.stringify({ accessToken, userId })
     })
     const data = await res.json()
     setEmails(data.emails || [])

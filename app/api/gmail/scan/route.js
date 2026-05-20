@@ -43,7 +43,7 @@ async function getValidToken(accessToken, userId) {
 }
 
 export async function POST(request) {
-  const { accessToken, userId, applications } = await request.json()
+  const { accessToken, userId } = await request.json()
 
   if (!accessToken || !userId) {
     return Response.json({ error: 'No access token' }, { status: 401 })
@@ -156,72 +156,78 @@ export async function POST(request) {
 
   const relevantEmails = classified.filter(e => e.relevant)
 
-  if (userId && relevantEmails.length > 0 && applications && applications.length > 0) {
+  if (relevantEmails.length > 0) {
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
 
-    for (const email of relevantEmails) {
-      if (!email.classification) continue
+    const { data: applications } = await supabase
+      .from('applications')
+      .select('id, company, role')
+      .eq('user_id', userId)
 
-      const statusMap = {
-        'interview_invite': 'Interviewing',
-        'rejection': 'Rejected',
-        'offer': 'Offer',
-        'application_confirmation': 'Applied'
-      }
+    if (applications && applications.length > 0) {
+      for (const email of relevantEmails) {
+        if (!email.classification) continue
 
-      const newStatus = statusMap[email.classification]
-      if (!newStatus) continue
+        const statusMap = {
+          'interview_invite': 'Interviewing',
+          'rejection': 'Rejected',
+          'offer': 'Offer',
+          'application_confirmation': 'Applied'
+        }
 
-      const matchRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: `You are helping match a recruiter email to a job application in a tracker.
-              Given an email and a list of applications, find which application this email is about.
-              Return ONLY a JSON object like this:
+        const newStatus = statusMap[email.classification]
+        if (!newStatus) continue
+
+        const matchRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
               {
-                "matched_id": "the id of the matching application or null",
-                "reasoning": "why you chose this match"
-              }
-              If no application matches, return null for matched_id.`
-            },
-            {
-              role: 'user',
-              content: `Email:
+                role: 'system',
+                content: `You are helping match a recruiter email to a job application in a tracker.
+                Given an email and a list of applications, find which application this email is about.
+                Return ONLY a JSON object like this:
+                {
+                  "matched_id": "the id of the matching application or null",
+                  "reasoning": "why you chose this match"
+                }
+                If no application matches, return null for matched_id.`
+              },
+              {
+                role: 'user',
+                content: `Email:
 Subject: ${email.subject}
 From: ${email.from}
 Snippet: ${email.snippet}
 
 Applications in tracker:
 ${JSON.stringify(applications.map(a => ({ id: a.id, company: a.company, role: a.role })))}`
-            }
-          ],
-          response_format: { type: 'json_object' }
+              }
+            ],
+            response_format: { type: 'json_object' }
+          })
         })
-      })
 
-      const matchData = await matchRes.json()
-      if (!matchData.choices || matchData.choices.length === 0) continue
+        const matchData = await matchRes.json()
+        if (!matchData.choices || matchData.choices.length === 0) continue
 
-      const matchResult = JSON.parse(matchData.choices[0].message.content)
-      console.log('AI match result:', matchResult)
+        const matchResult = JSON.parse(matchData.choices[0].message.content)
 
-      if (matchResult.matched_id) {
-        await supabase
-          .from('applications')
-          .update({ status: newStatus })
-          .eq('id', matchResult.matched_id)
+        if (matchResult.matched_id) {
+          await supabase
+            .from('applications')
+            .update({ status: newStatus })
+            .eq('id', matchResult.matched_id)
+        }
       }
     }
   }

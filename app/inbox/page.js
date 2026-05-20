@@ -26,10 +26,7 @@ export default async function Inbox() {
     .eq('user_id', user.id)
     .single()
 
-  const { data: applications } = await supabase
-    .from('applications')
-    .select('id, company, role, status')
-
+  
   const accessToken = tokenData?.access_token
 
   return (
@@ -39,7 +36,6 @@ export default async function Inbox() {
       <InboxClient
         accessToken={accessToken}
         userId={user.id}
-        applications={applications || []}
       />
     </div>
   )
