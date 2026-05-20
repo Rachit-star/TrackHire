@@ -26,16 +26,18 @@ export async function GET(request) {
     )
 
     const { data } = await supabase.auth.exchangeCodeForSession(code)
-    
-    // Store the provider token in the database
+
     if (data.session?.provider_token) {
-      await supabase
-        .from('user_tokens')
-        .upsert({
-          user_id: data.session.user.id,
-          access_token: data.session.provider_token
-        })
-    }
+  await supabase
+    .from('user_tokens')
+    .upsert({
+      user_id: data.session.user.id,
+      access_token: data.session.provider_token,
+      refresh_token: data.session.provider_refresh_token
+    }, {
+      onConflict: 'user_id'
+    })
+}
   }
 
   return response

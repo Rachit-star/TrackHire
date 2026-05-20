@@ -26,13 +26,21 @@ export default async function Inbox() {
     .eq('user_id', user.id)
     .single()
 
+  const { data: applications } = await supabase
+    .from('applications')
+    .select('id, company, role, status')
+
   const accessToken = tokenData?.access_token
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Inbox</h1>
       <p className={styles.subtitle}>AI scans your Gmail for recruiter emails</p>
-      <InboxClient accessToken={accessToken} />
+      <InboxClient
+        accessToken={accessToken}
+        userId={user.id}
+        applications={applications || []}
+      />
     </div>
   )
 }

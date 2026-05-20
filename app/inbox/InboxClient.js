@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import styles from './inbox.module.css'
 
-export default function InboxClient({ accessToken }) {
+export default function InboxClient({ accessToken, userId, applications }) {
   const [emails, setEmails] = useState([])
   const [loading, setLoading] = useState(false)
   const [scanned, setScanned] = useState(false)
@@ -13,7 +13,7 @@ export default function InboxClient({ accessToken }) {
     const res = await fetch('/api/gmail/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accessToken })
+      body: JSON.stringify({ accessToken, userId, applications })
     })
     const data = await res.json()
     setEmails(data.emails || [])
@@ -73,6 +73,11 @@ export default function InboxClient({ accessToken }) {
               }}>
                 {email.classification}
               </span>
+            )}
+            {email.action && (
+              <p style={{ color: '#888', fontSize: '12px', marginTop: '6px' }}>
+                💡 {email.action}
+              </p>
             )}
           </div>
         ))}
