@@ -1,17 +1,15 @@
 import "./globals.css"
 import Navbar from "./components/Navbar"
 
-export const metadata = {
-  title: "TrackHire",
-  description: "Track your internship applications",
-}
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Navbar />
-        {children}
+        {/* The flex-grow: 1 ensures the children grow to fill all remaining space */}
+        <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          {children}
+        </main>
       </body>
     </html>
   )

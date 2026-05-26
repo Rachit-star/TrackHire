@@ -1,176 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap');
+
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+  width: 100vw;
+  overflow-x: hidden;
+  /* RICHER, MORE EXPANSIVE SILVER: 
+     A broader, softer gradient so the metallic feel dominates the whole screen */
+  background: linear-gradient(145deg, #EAECEF 0%, #D0D6E2 40%, #A3ABB8 85%, #8B94A5 100%);
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  color: #121417;
   display: flex;
-  flex: 1;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  min-height: 100%;
+  flex-grow: 1;
 }
 
-.main {
-  display: flex;
-  flex: 1;
+/* Base industrial metal grain */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.045'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- THE PEACEFUL AMBIENT GLYPH DRIFT --- */
+.driftingGlyphs {
+  position: absolute;
+  inset: -100px; /* Oversized to allow seamless panning */
+  /* Custom SVG Data URI containing tech doodles (sparks, nodes, envelopes) */
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23000' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M60 40 Q 60 60 40 60 Q 60 60 60 80 Q 60 60 80 60 Q 60 60 60 40' /%3E%3Cpath d='M250 140 h40 v25 h-40 z M250 140 l20 15 l20 -15' /%3E%3Cpath d='M100 280 circle 4 M100 280 l30 -20 circle 4 M130 260 l25 15 circle 4' /%3E%3Cpath d='M300 340 l10 10 l20 -20' /%3E%3Ccircle cx='180' cy='190' r='18' stroke-dasharray='4 4' /%3E%3C/g%3E%3C/svg%3E");
+  background-size: 500px 500px;
+  /* Extremely faint, perfectly subtle */
+  opacity: 0.04;
+  z-index: 2;
+  pointer-events: none;
+  /* Slow, continuous, calming diagonal pan */
+  animation: gentleDrift 100s linear infinite;
+}
+
+@keyframes gentleDrift {
+  from { background-position: 0px 0px; }
+  to { background-position: 500px 500px; } /* Must match background-size for perfect loop */
+}
+
+/* --- MAIN LAYOUT --- */
+.interfaceLayout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  max-width: 1600px;
   width: 100%;
-  max-width: 800px;
+  margin: auto;
+  padding: 60px 80px;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 5;
+}
+
+.leftPanel {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  padding-right: 40px;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.heroTitle {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(52px, 5.5vw, 80px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #121417;
+  margin-bottom: 24px;
+  text-shadow: 1px 1px 0px rgba(255,255,255,0.6);
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+.heroOrange {
+  color: #FF5500;
+  text-shadow: 0 8px 32px rgba(255,85,0,0.25);
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
+.heroSub {
+  font-size: 17px;
+  color: #3A4250;
+  line-height: 1.65;
+  max-width: 500px;
+  margin-bottom: 48px;
   font-weight: 500;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+/* Magnetic Hitbox */
+.magnetHitbox {
+  padding: 30px;
+  margin: -30px;
+  display: inline-block;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
-}
-
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
-}
-
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
+.ctaBtn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  gap: 16px;
-}
-
-.title {
-  font-size: 48px;
-  font-weight: 700;
-  color: #FF6B00;
-}
-
-.subtitle {
-  font-size: 18px;
-  color: #f5f5f5;
-}
-
-.button {
-  background-color: #FF6B00;
+  gap: 14px;
+  background: linear-gradient(180deg, #2A2D34 0%, #121417 100%);
   color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 8px;
+  border: 1px solid #3A3F48;
+  padding: 18px 44px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
-  cursor: pointer;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.18), inset 0 1px 1px rgba(255,255,255,0.15);
+  transition: transform 0.12s linear, box-shadow 0.3s ease, border-color 0.3s ease;
+  will-change: transform;
 }
 
-.button:hover {
-  background-color: #FF8C00;
+.ctaBtn:hover {
+  box-shadow: 0 20px 40px rgba(255,85,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+  border-color: #FF5500;
 }
+.ctaBtn svg { color: #FF5500; }
+
+/* Right Frosted Panel */
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 540px;
+  justify-self: end;
+}
+
+.chassisSlot {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  box-shadow: 0 12px 32px rgba(130, 145, 165, 0.15), inset 0 2px 2px rgba(255,255,255,0.7);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chassisSlot:hover {
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,1);
+  transform: scale(1.02) translateX(-4px);
+  box-shadow: 0 20px 40px rgba(110, 125, 145, 0.25), inset 0 2px 4px rgba(255,255,255,1);
+}
+
+.slotMeta { display: flex; justify-content: space-between; align-items: center; }
+.slotId { font-size: 18px; font-weight: 800; color: #121417; letter-spacing: -0.3px; }
+.slotTimestamp { font-size: 12px; font-weight: 600; color: #535C6E; }
+.statusControl { display: flex; align-items: center; gap: 10px; }
+
+/* Micro LEDs */
+.hardwareLedOrange, .hardwareLedGreen, .hardwareLedGrey { width: 8px; height: 8px; border-radius: 50%; }
+.hardwareLedOrange { background: #FF5500; box-shadow: 0 0 12px #FF5500; }
+.hardwareLedGreen { background: #059669; box-shadow: 0 0 12px #059669; }
+.hardwareLedGrey { background: #7A8599; }
+
+.statusTextOrange { font-size: 13px; font-weight: 700; color: #CC4400; }
+.statusTextGreen { font-size: 13px; font-weight: 700; color: #047857; }
+.statusTextGrey { font-size: 13px; font-weight: 700; color: #4A5365; }
+
+/* Glow Accents */
+.slotGlowOrange, .slotGlowGreen { position: absolute; inset: 0; border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.slotGlowOrange { background: radial-gradient(circle at 90% 50%, rgba(255,85,0,0.06) 0%, transparent 60%); }
+.slotGlowGreen { background: radial-gradient(circle at 90% 50%, rgba(5,150,105,0.06) 0%, transparent 60%); }
+.chassisSlot:hover .slotGlowOrange, .chassisSlot:hover .slotGlowGreen { opacity: 1; }
+
+/* --- READOUT FOOTER --- */
+.dashboardFooter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(18, 20, 23, 0.12);
+  height: 120px;
+  width: 100%;
+  margin-top: auto; /* This pushes the footer to the bottom of the page */
+  position: relative;
+  z-index: 10;
+}
+
+.metricNode { display: flex; flex-direction: column; justify-content: center; padding: 0 80px; gap: 4px; }
+.metricNode:not(:last-child) { border-right: 1px solid rgba(18, 20, 23, 0.12); }
+.metricHeader { font-size: 11px; font-weight: 700; color: #4A5365; letter-spacing: 1.2px; text-transform: uppercase; }
+
+.metricValue { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: #121417; }
+.metricValueActive { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: #FF5500; }
+

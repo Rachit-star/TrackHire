@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { createClient } from '../lib/supabase'
 import AddApplicationForm from '../components/AddApplicationForm'
+import styles from './applications.module.css'
 
 function getDaysWaiting(dateApplied) {
   const start = new Date(dateApplied)
@@ -11,21 +12,13 @@ function getDaysWaiting(dateApplied) {
   return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
-function getDaysColor(days) {
-  if (days < 30) return '#4CAF50'
-  if (days < 60) return '#FF9800'
-  return '#f44336'
+function getUrgency(days) {
+  if (days < 30) return 'low'
+  if (days < 60) return 'medium'
+  return 'high'
 }
 
-function getStatusColor(status) {
-  if (status === 'Applied') return '#2196F3'
-  if (status === 'Interviewing') return '#FF9800'
-  if (status === 'Rejected') return '#f44336'
-  if (status === 'Offer') return '#4CAF50'
-  return '#888'
-}
-
-export default function ApplicationsClient({ applications, styles }) {
+export default function ApplicationsClient({ applications }) {
   const router = useRouter()
 
   function handleAdd() {
@@ -40,82 +33,86 @@ export default function ApplicationsClient({ applications, styles }) {
 
   async function handleStatusChange(id, newStatus) {
     const supabase = createClient()
-    await supabase
-      .from('applications')
-      .update({ status: newStatus })
-      .eq('id', id)
+    await supabase.from('applications').update({ status: newStatus }).eq('id', id)
     router.refresh()
   }
 
   return (
-    <>
-      <AddApplicationForm onAdd={handleAdd} />
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Role</th>
-            <th>Platform</th>
-            <th>Date Applied</th>
-            <th>Days Waiting</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {applications && applications.map((app) => (
-            <tr key={app.id}>
-              <td>{app.company}</td>
-              <td>{app.role}</td>
-              <td>{app.platform}</td>
-              <td>{app.date_applied}</td>
-              <td style={{ color: getDaysColor(getDaysWaiting(app.date_applied)) }}>
-                {getDaysWaiting(app.date_applied)} days
-              </td>
-              <td>
-                <select
-                  value={app.status}
-                  onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                  style={{
-                    backgroundColor: getStatusColor(app.status),
-                    color: '#fff',
-                    border: 'none',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="Applied">Applied</option>
-                  <option value="Interviewing">Interviewing</option>
-                  <option value="Rejected">Rejected</option>
-                  <option value="Offer">Offer</option>
-                </select>
-              </td>
-              <td>
-                <button
-                  onClick={() => handleDelete(app.id)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#f44336',
-                    cursor: 'pointer',
-                    fontSize: '13px'
-                  }}
-                >
-                  Delete
-                </button>
-              </td>
+    <div className={styles.container}>
+      
+      {/* Ambient Engine to sync with the Dashboard vibe */}
+      <div className={styles.ambientOrange}></div>
+      <div className={styles.driftingGlyphs}></div>
+
+      {/* Wrap the form in a matching glass container */}
+      <div className={styles.formWrapper}>
+        <AddApplicationForm onAdd={handleAdd} />
+      </div>
+
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Role</th>
+              <th>Platform</th>
+              <th>Date Applied</th>
+              <th>Days Waiting</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {applications && applications.length === 0 && (
-        <p style={{ textAlign: 'center', marginTop: '40px', color: '#888' }}>
-          No applications yet. Add your first one!
-        </p>
-      )}
-    </>
+          </thead>
+          <tbody>
+            {applications && applications.length > 0 ? applications.map((app) => {
+              const days = getDaysWaiting(app.date_applied);
+              const urgency = getUrgency(days);
+              
+              return (
+                <tr key={app.id}>
+                  <td className={styles.fontBold}>{app.company}</td>
+                  <td>{app.role}</td>
+                  <td className={styles.fontMuted}>{app.platform}</td>
+                  <td className={styles.fontMuted}>{app.date_applied}</td>
+                  
+                  {/* Dynamic coloring handled cleanly via data attributes */}
+                  <td className={styles.daysWaiting} data-urgency={urgency}>
+                    {days} days
+                  </td>
+                  
+                  <td>
+                    <select
+                      className={styles.statusSelect}
+                      data-status={app.status}
+                      value={app.status}
+                      onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                    >
+                      <option value="Applied">Applied</option>
+                      <option value="Interviewing">Interviewing</option>
+                      <option value="Rejected">Rejected</option>
+                      <option value="Offer">Offer</option>
+                    </select>
+                  </td>
+                  
+                  <td>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={() => handleDelete(app.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              )
+            }) : (
+              <tr>
+                <td colSpan="7" className={styles.emptyState}>
+                  No applications yet. Add your first one!
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }

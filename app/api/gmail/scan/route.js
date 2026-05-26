@@ -3,8 +3,12 @@ async function getValidToken(accessToken, userId) {
     'https://gmail.googleapis.com/gmail/v1/users/me/profile',
     { headers: { Authorization: `Bearer ${accessToken}` } }
   )
+  console.log('token test status:', testRes.status)
 
   if (testRes.ok) return accessToken
+
+    console.log('token expired, attempting refresh...')
+
 
   const { createClient } = await import('@supabase/supabase-js')
   const supabase = createClient(
@@ -12,13 +16,18 @@ async function getValidToken(accessToken, userId) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
-  const { data: tokenData } = await supabase
+  const { data: tokenData,error:tokenError } = await supabase
     .from('user_tokens')
     .select('refresh_token')
     .eq('user_id', userId)
     .single()
-
+console.log('tokenData:', JSON.stringify(tokenData))
+console.log('tokenError:', tokenError)
   if (!tokenData?.refresh_token) return null
+  console.log('attempting refresh with client_id:', !!process.env.GOOGLE_CLIENT_ID)
+console.log('attempting refresh with client_secret:', !!process.env.GOOGLE_CLIENT_SECRET)
+console.log('refresh token exists:', !!tokenData?.refresh_token)
+
 
   const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -32,6 +41,8 @@ async function getValidToken(accessToken, userId) {
   })
 
   const refreshData = await refreshRes.json()
+  console.log('refresh response:', JSON.stringify(refreshData))
+
   if (!refreshData.access_token) return null
 
   await supabase
@@ -55,7 +66,7 @@ export async function POST(request) {
   }
 
   const listRes = await fetch(
-    'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&q=subject:(interview OR application OR offer OR rejected OR hiring OR internship OR selected OR congratulations)',
+  'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=newer_than:7d -category:promotions -category:social -category:updates -in:sent',
     {
       headers: {
         Authorization: `Bearer ${validToken}`
@@ -93,6 +104,8 @@ export async function POST(request) {
       }
     })
   )
+
+  console.log('email subjects:', emails.map(e => e.subject))
 
   const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',

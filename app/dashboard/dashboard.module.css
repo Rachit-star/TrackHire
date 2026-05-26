@@ -1,35 +1,230 @@
 .container {
-  padding: 32px;
+  /* Increased top padding from 60px to 100px so the header clears your navbar completely */
+  padding: 100px 80px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
 }
 
+/* --- THE EARPHONE VIBE BACKGROUND --- */
+.ambientOrange {
+  position: fixed;
+  top: 15%;
+  left: 25%;
+  width: 50vw;
+  height: 50vh;
+  /* Deep, pure industrial orange reflection (no pulsing) */
+  background: radial-gradient(circle, rgba(255, 85, 0, 0.08) 0%, transparent 70%);
+  filter: blur(80px);
+  z-index: -2;
+  pointer-events: none;
+}
+
+.driftingGlyphs {
+  position: fixed;
+  inset: -100px; 
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23000' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M60 40 Q 60 60 40 60 Q 60 60 60 80 Q 60 60 80 60 Q 60 60 60 40' /%3E%3Cpath d='M250 140 h40 v25 h-40 z M250 140 l20 15 l20 -15' /%3E%3Cpath d='M100 280 circle 4 M100 280 l30 -20 circle 4 M130 260 l25 15 circle 4' /%3E%3Ccircle cx='180' cy='190' r='18' stroke-dasharray='4 4' /%3E%3C/g%3E%3C/svg%3E");
+  background-size: 500px 500px;
+  opacity: 0.035; 
+  z-index: -1; 
+  pointer-events: none;
+  animation: gentleDrift 100s linear infinite;
+}
+
+@keyframes gentleDrift {
+  from { background-position: 0px 0px; }
+  to { background-position: 500px 500px; }
+}
+
+/* --- HEADER --- */
+.header { margin-bottom: 40px; }
+
 .title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #f5f5f5;
+  font-family: 'Sora', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #121417;
+  letter-spacing: -1px;
+  margin: 0;
+}
+
+/* --- TOP ROW: VITALS --- */
+.vitalsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   margin-bottom: 24px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+.vitalCard {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(130, 145, 165, 0.05);
+  transition: border-color 0.2s ease;
 }
 
-.card {
-  background-color: #2a2a2a;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #333;
+.vitalCard:hover {
+  border-color: rgba(255, 85, 0, 0.3);
 }
 
-.label {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 8px;
-}
-
-.number {
-  font-size: 36px;
+.vitalLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
   font-weight: 700;
-  color: #f5f5f5;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.vitalNumber {
+  font-family: 'Sora', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  color: #121417;
+}
+
+/* --- MAIN GRID: LISTS --- */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .mainGrid { grid-template-columns: 1fr; }
+  .vitalsRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+.glassPanel {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(130, 145, 165, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.panelTitle {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #121417;
+}
+
+/* --- LIST ITEMS --- */
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.listItem:hover {
+  background: rgba(255, 255, 255, 0.4);
+  /* Crisp orange highlight on hover instead of a glow */
+  border-color: rgba(255, 85, 0, 0.4);
+  transform: translateX(4px);
+}
+
+.itemMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemCompany {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #121417;
+}
+
+.itemDate {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.itemStatus {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 100px;
+  background: rgba(18, 20, 23, 0.05);
+  color: #4A5365;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Precise status colors without glows */
+.itemStatus[data-status="Interviewing"] { background: rgba(255, 85, 0, 0.1); color: #CC4400; }
+.itemStatus[data-status="Offer"] { background: rgba(5, 150, 105, 0.1); color: #047857; }
+.itemStatus[data-status="Rejected"] { background: rgba(220, 38, 38, 0.1); color: #B91C1C; }
+
+/* Action Items */
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: rgba(255, 85, 0, 0.05);
+  /* Hard orange physical border */
+  border-left: 3px solid #FF5500;
+  border-radius: 8px;
+}
+
+.actionCompany {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #121417;
+}
+
+.actionReason {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #CC4400;
+  font-weight: 600;
+}
+
+.emptyState {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  font-style: italic;
+  text-align: center;
+  padding: 24px 0;
 }
