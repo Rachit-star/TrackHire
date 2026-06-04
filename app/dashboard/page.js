@@ -15,35 +15,55 @@ export default async function Dashboard() {
   )
 
   const { data: applications } = await supabase.from('applications').select('*')
+  const { data: aiEvents } = await supabase
+    .from('ai_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5)
 
-  // Safely default to empty array
   const apps = applications || []
+  const events = aiEvents || []
 
-  // Vitals
   const total = apps.length
   const active = apps.filter(a => a.status === 'Applied' || a.status === 'Interviewing').length
   const offers = apps.filter(a => a.status === 'Offer').length
   const responseRate = total > 0 ? Math.round(((apps.filter(a => a.status !== 'Applied').length) / total) * 100) : 0
 
-  // Top 5 Recent Activities (Sorted by newest first)
+  const actionItems = apps.filter(a => {
+    if (a.status === 'Interviewing') return true
+    if (a.status === 'Applied') {
+      const days = Math.floor((new Date() - new Date(a.date_applied)) / (1000 * 60 * 60 * 24))
+      return days > 21
+    }
+    return false
+  }).slice(0, 4)
+
   const recentApps = [...apps]
     .sort((a, b) => new Date(b.date_applied) - new Date(a.date_applied))
     .slice(0, 5)
 
-  // Action Required (Interviews OR Stagnant > 21 days)
-  const actionItems = apps.filter(a => {
-    if (a.status === 'Interviewing') return true;
-    if (a.status === 'Applied') {
-      const days = Math.floor((new Date() - new Date(a.date_applied)) / (1000 * 60 * 60 * 24));
-      return days > 21;
+  function getClassificationLabel(classification) {
+    const labels = {
+      'interview_invite': 'Interview Invite',
+      'rejection': 'Rejection',
+      'offer': 'Offer',
+      'application_confirmation': 'Confirmed'
     }
-    return false;
-  }).slice(0, 4)
+    return labels[classification] || classification
+  }
+
+  function getEventColor(classification) {
+    const colors = {
+      'interview_invite': '#FF5500',
+      'rejection': '#DC2626',
+      'offer': '#059669',
+      'application_confirmation': '#3B82F6'
+    }
+    return colors[classification] || '#64748B'
+  }
 
   return (
     <div className={styles.container}>
-      
-      {/* Earphone Vibe: Ambient Orange Glow on Silver */}
       <div className={styles.ambientOrange}></div>
       <div className={styles.driftingGlyphs}></div>
 
@@ -51,7 +71,6 @@ export default async function Dashboard() {
         <h1 className={styles.title}>Dashboard</h1>
       </div>
 
-      {/* TOP ROW: Compact Vitals */}
       <div className={styles.vitalsRow}>
         <div className={styles.vitalCard}>
           <span className={styles.vitalLabel}>Total Tracked</span>
@@ -71,31 +90,52 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
       <div className={styles.mainGrid}>
-        
-        {/* LEFT: Recent Scanner Activity */}
+
+        {/* LEFT: AI Scanner Activity */}
         <div className={`${styles.glassPanel} ${styles.feedPanel}`}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Recent Scanner Activity</div>
-            {/* Removed the pulsing dot and LIVE text */}
           </div>
-          
+
           <div className={styles.listContainer}>
-            {recentApps.length > 0 ? recentApps.map((app, i) => (
+            {events.length > 0 ? events.map((event, i) => (
               <div key={i} className={styles.listItem}>
                 <div className={styles.itemMain}>
-                  <span className={styles.itemCompany}>{app.company || 'Unknown Company'}</span>
+                  <span className={styles.itemCompany}>{event.company}</span>
                   <span className={styles.itemDate}>
-                    {new Date(app.date_applied).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
-                <span className={styles.itemStatus} data-status={app.status}>
-                  {app.status}
+                <span
+                  className={styles.itemStatus}
+                  style={{ color: getEventColor(event.classification) }}
+                >
+                  {getClassificationLabel(event.classification)} → {event.status_updated_to}
                 </span>
               </div>
             )) : (
-              <p className={styles.emptyState}>No applications tracked yet. Scanner standing by.</p>
+              <div>
+                <p className={styles.emptyState}>No AI activity yet.</p>
+                <p className={styles.emptyStateSub}>Scan your Gmail inbox to let AI detect recruiter emails.</p>
+                {recentApps.length > 0 && (
+                  <div style={{ marginTop: '16px' }}>
+                    {recentApps.map((app, i) => (
+                      <div key={i} className={styles.listItem}>
+                        <div className={styles.itemMain}>
+                          <span className={styles.itemCompany}>{app.company}</span>
+                          <span className={styles.itemDate}>
+                            {new Date(app.date_applied).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                        <span className={styles.itemStatus} data-status={app.status}>
+                          {app.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -105,7 +145,7 @@ export default async function Dashboard() {
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Attention Required</div>
           </div>
-          
+
           <div className={styles.listContainer}>
             {actionItems.length > 0 ? actionItems.map((app, i) => (
               <div key={i} className={styles.actionItem}>

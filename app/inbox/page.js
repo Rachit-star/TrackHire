@@ -31,8 +31,7 @@ export default async function Inbox() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Inbox</h1>
-      <p className={styles.subtitle}>AI scans your Gmail for recruiter emails</p>
+      
       <InboxClient
         accessToken={accessToken}
         userId={user.id}

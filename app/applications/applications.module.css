@@ -2,7 +2,7 @@
   /* FIX 1: Lock the page to the exact height of the screen to kill the double scroll */
   height: 100vh;
   padding: 90px 80px 30px; /* Reduced padding to pull everything up */
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   position: relative;
@@ -68,11 +68,10 @@
   padding: 24px;
   box-shadow: 0 8px 24px rgba(130, 145, 165, 0.1);
 }
-
 .formWrapper form {
   display: grid !important;
-  grid-template-columns: 1.2fr 1fr 1.2fr 1fr auto !important;
-  gap: 16px !important;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1fr 0.9fr 80px !important;
+  gap: 10px !important;
   align-items: center !important;
   width: 100% !important;
 }
@@ -113,17 +112,17 @@
   background: #FF5500 !important;
   color: white !important;
   border: none !important;
-  padding: 12px 24px !important;
+  padding: 12px 8px !important;
   border-radius: 12px !important;
   font-family: 'DM Sans', sans-serif !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   white-space: nowrap !important;
   box-shadow: 0 4px 12px rgba(255, 85, 0, 0.2) !important;
+  width: 100% !important;
 }
-
 .formWrapper button:hover {
   filter: brightness(1.1) !important;
   transform: translateY(-1px) !important;
@@ -143,7 +142,7 @@
   flex-grow: 1;
   min-height: 0; /* Crucial for flexbox scrolling */
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .tableContainer::-webkit-scrollbar {
@@ -166,11 +165,12 @@
   width: 100%;
   border-collapse: collapse;
   font-family: 'DM Sans', sans-serif;
+  table-layout: fixed;
 }
 
 .table th {
   text-align: left;
-  padding: 20px 24px;
+  padding: 20px 16px; /* Reduced from 24px */
   color: #64748B;
   font-size: 11px;
   font-weight: 700;
@@ -184,20 +184,29 @@
 }
 
 .table td {
-  padding: 16px 24px;
+  padding: 16px 16px; /* Reduced from 24px */
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   color: #121417;
   font-size: 14px;
   font-weight: 500;
   vertical-align: middle;
 }
-
 .table tr:last-child td {
   border-bottom: none;
 }
 
 .table tr:hover td {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.notesCell {
+  max-width: 180px;
+}
+
+.notesContent {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Typography Helpers */
@@ -229,6 +238,11 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px;
+
+  /* THE OVERFLOW FIX: Forces the pill to stay inside its column */
+  max-width: 100%;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
 }
 
 .statusSelect[data-status="Applied"] { background-color: rgba(18, 20, 23, 0.08); color: #4A5365; }
@@ -287,3 +301,27 @@
   opacity: 1;
   transform: scale(1.1);
 }
+
+.linkBtn {
+  color: #FF6B00;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+/* --- REBALANCED COLUMN WIDTHS --- */
+.companyCol { width: 13%; }
+.roleCol { width: 13%; }
+.platformCol { width: 9%; }
+.dateCol { width: 11%; white-space: nowrap !important; }
+.daysCol { width: 10%; white-space: nowrap !important; }
+
+/* Expanded from 13% to 16% to fit the dropdown comfortably */
+.statusCol { width: 16%; } 
+
+.notesCol { width: 16%; }
+.linkCol { width: 5%; text-align: center !important; }
+.actionCol { width: 7%; text-align: right !important; padding-right: 24px !important; }

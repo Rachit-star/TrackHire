@@ -228,3 +228,8 @@
   text-align: center;
   padding: 24px 0;
 }
+.emptyStateSub {
+  font-size: 12px;
+  color: #94A3B8;
+  margin-top: 4px;
+}

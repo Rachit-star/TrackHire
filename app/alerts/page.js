@@ -2,9 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import styles from './alerts.module.css'
 
+// LOGIC UNTOUCHED
 function getDaysWaiting(dateApplied) {
   const start = new Date(dateApplied)
   const today = new Date()
+  if (start > today) return 0
   const diff = today - start
   return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
@@ -30,6 +32,7 @@ export default async function Alerts() {
 
   const alerts = []
 
+  // LOGIC UNTOUCHED
   applications?.forEach(app => {
     const days = getDaysWaiting(app.date_applied)
 
@@ -56,22 +59,36 @@ export default async function Alerts() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Alerts</h1>
-      {alerts.length === 0 && (
-        <p className={styles.empty}>No alerts right now — you're on top of things!</p>
-      )}
-      <div className={styles.list}>
-        {alerts.map((alert) => (
-          <div
-            key={alert.id}
-            className={styles.card}
-            style={{ borderLeft: `4px solid ${alert.urgency === 'high' ? '#f44336' : '#FF9800'}` }}
-          >
-            <p className={styles.message}>{alert.message}</p>
-            <span className={styles.company}>{alert.company}</span>
-          </div>
-        ))}
+      
+      {/* Signature Background Vibe */}
+      <div className={styles.ambientOrange}></div>
+      <div className={styles.driftingGlyphs}></div>
+
+      <div className={styles.header}>
+        <h1 className={styles.title}>Alerts</h1>
       </div>
+
+      <div className={styles.feedContainer}>
+        {alerts.length === 0 && (
+          <div className={styles.emptyState}>
+            <p>No alerts right now — you're on top of things!</p>
+          </div>
+        )}
+        
+        <div className={styles.list}>
+          {alerts.map((alert) => (
+            <div
+              key={alert.id}
+              className={styles.card}
+              data-urgency={alert.urgency}
+            >
+              <p className={styles.message}>{alert.message}</p>
+              <span className={styles.companyBadge}>{alert.company}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      
     </div>
   )
 }

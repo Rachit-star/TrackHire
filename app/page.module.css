@@ -1,19 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap');
 
 .page {
-  width: 100vw;
-  overflow-x: hidden;
-  /* RICHER, MORE EXPANSIVE SILVER: 
-     A broader, softer gradient so the metallic feel dominates the whole screen */
-  background: linear-gradient(145deg, #EAECEF 0%, #D0D6E2 40%, #A3ABB8 85%, #8B94A5 100%);
+  /* Lock the container to exactly the height of the screen */
+  height: 100vh;
+  width: 100%;
+  
+  /* This completely vaporizes the scrollbar and stops any scrolling */
+  overflow: hidden; 
+  
   position: relative;
-  font-family: 'DM Sans', sans-serif;
-  color: #121417;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  min-height: 100%;
-  flex-grow: 1;
 }
 
 /* Base industrial metal grain */
