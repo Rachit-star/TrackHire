@@ -22,19 +22,18 @@ export default async function Inbox() {
 
   const { data: tokenData } = await supabase
     .from('user_tokens')
-    .select('access_token')
+    .select('user_id')
     .eq('user_id', user.id)
     .single()
 
-  
-  const accessToken = tokenData?.access_token
+
+  const hasToken = !!tokenData
 
   return (
     <div className={styles.container}>
       
       <InboxClient
-        accessToken={accessToken}
-        userId={user.id}
+        hasToken={hasToken}
       />
     </div>
   )

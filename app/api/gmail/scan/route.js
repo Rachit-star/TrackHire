@@ -1,3 +1,5 @@
+import { createServerClient } from '@supabase/ssr'
+
 async function getValidToken(accessToken, userId) {
   const testRes = await fetch(
     'https://gmail.googleapis.com/gmail/v1/users/me/profile',
@@ -43,13 +45,45 @@ async function getValidToken(accessToken, userId) {
 }
 
 export async function POST(request) {
-  const { accessToken, userId } = await request.json()
+  // Authenticate the user from session cookies
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll() {}
+      }
+    }
+  )
 
-  if (!accessToken || !userId) {
-    return Response.json({ error: 'No access token' }, { status: 401 })
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const validToken = await getValidToken(accessToken, userId)
+  const userId = user.id
+
+  // Get access token from database (never from client)
+  const { createClient } = await import('@supabase/supabase-js')
+  const adminSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
+  const { data: initialTokenData } = await adminSupabase
+    .from('user_tokens')
+    .select('access_token')
+    .eq('user_id', userId)
+    .single()
+
+  if (!initialTokenData?.access_token) {
+    return Response.json({ error: 'No Gmail token found. Please sign in again.' }, { status: 401 })
+  }
+
+  const validToken = await getValidToken(initialTokenData.access_token, userId)
   if (!validToken) {
     return Response.json({ error: 'Token refresh failed' }, { status: 401 })
   }
@@ -139,7 +173,12 @@ export async function POST(request) {
     return Response.json({ emails: [] })
   }
 
-  const groqResult = JSON.parse(groqData.choices[0].message.content)
+  let groqResult
+  try {
+    groqResult = JSON.parse(groqData.choices[0].message.content)
+  } catch {
+    return Response.json({ emails: [] })
+  }
   const results = groqResult.results || []
 
   const classified = emails.map((email, index) => {
@@ -219,7 +258,12 @@ ${JSON.stringify(applications.map(a => ({ id: a.id, company: a.company, role: a.
         const matchData = await matchRes.json()
         if (!matchData.choices || matchData.choices.length === 0) continue
 
-        const matchResult = JSON.parse(matchData.choices[0].message.content)
+        let matchResult
+        try {
+          matchResult = JSON.parse(matchData.choices[0].message.content)
+        } catch {
+          continue
+        }
         const matchedApp = applications.find(a => a.id === matchResult.matched_id)
 
         if (matchResult.matched_id) {

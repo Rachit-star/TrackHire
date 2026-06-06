@@ -1,4 +1,25 @@
+import { createServerClient } from '@supabase/ssr'
+
 export async function POST(request) {
+  // Authenticate the user from session cookies
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll() {}
+      }
+    }
+  )
+
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { applications } = await request.json()
 
   if (!applications || applications.length < 2) {

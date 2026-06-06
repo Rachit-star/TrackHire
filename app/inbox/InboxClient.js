@@ -3,24 +3,30 @@
 import { useState } from 'react'
 import styles from './inbox.module.css'
 
-export default function InboxClient({ accessToken, userId }) {
+export default function InboxClient({ hasToken }) {
   const [emails, setEmails] = useState([])
   const [loading, setLoading] = useState(false)
   const [scanned, setScanned] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleScan() {
     setLoading(true)
+    setError('')
     try {
       const res = await fetch('/api/gmail/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, userId })
+        body: JSON.stringify({})
       })
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Scan failed')
+        return
+      }
       setEmails(data.emails || [])
       setScanned(true)
-    } catch (error) {
-      console.error("Scan failed:", error)
+    } catch (err) {
+      setError('Scan failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -40,11 +46,12 @@ export default function InboxClient({ accessToken, userId }) {
       <div className={styles.actionRow}>
         <button
           onClick={handleScan}
-          disabled={loading}
+          disabled={loading || !hasToken}
           className={`${styles.scanBtn} ${loading ? styles.loadingBtn : ''}`}
         >
-          {loading ? 'Scanning Network...' : 'Scan Gmail'}
+          {loading ? 'Scanning Network...' : !hasToken ? 'Gmail Not Connected' : 'Scan Gmail'}
         </button>
+        {error && <p style={{ color: '#DC2626', marginTop: '10px', fontSize: '14px' }}>{error}</p>}
       </div>
 
       <div className={styles.feedContainer}>
