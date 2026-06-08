@@ -26,19 +26,19 @@ export default function Home() {
   }
 
   async function signInWithGoogle() {
-  const supabase = createClient()
-  await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-      scopes: 'https://www.googleapis.com/auth/gmail.readonly',
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent'
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'https://www.googleapis.com/auth/gmail.readonly',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
-    }
-  })
-}
+    })
+  }
 
   return (
     <div className={styles.page}>
@@ -122,6 +122,16 @@ export default function Home() {
         </div>
 
       </main>
+
+     <div className={styles.accessFooter}>
+        <p className={styles.accessText}>
+          App is in Google verification.{' '}
+          <a href="mailto:trackhire.access@gmail.com" className={styles.accessLink}>
+            Request access →
+          </a>
+        </p>
+      </div>
+
     </div>
   )
 }

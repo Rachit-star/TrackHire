@@ -194,3 +194,30 @@
 .metricValue { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: #121417; }
 .metricValueActive { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: #FF5500; }
 
+.accessFooter {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  text-align: center;
+}
+
+.accessText {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.accessLink {
+  color: #FF5500;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.accessLink:hover {
+  text-decoration: underline;
+}
