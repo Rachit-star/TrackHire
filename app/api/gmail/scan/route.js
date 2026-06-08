@@ -45,7 +45,6 @@ async function getValidToken(accessToken, userId) {
 }
 
 export async function POST(request) {
-  // Authenticate the user from session cookies
   const supabaseAuth = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -66,7 +65,6 @@ export async function POST(request) {
 
   const userId = user.id
 
-  // Get access token from database (never from client)
   const { createClient } = await import('@supabase/supabase-js')
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -179,6 +177,7 @@ export async function POST(request) {
   } catch {
     return Response.json({ emails: [] })
   }
+
   const results = groqResult.results || []
 
   const classified = emails.map((email, index) => {
@@ -201,102 +200,132 @@ export async function POST(request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
 
-    const { data: applications } = await supabase
+    const { data: applicationsData } = await supabase
       .from('applications')
       .select('id, company, role')
       .eq('user_id', userId)
 
-    if (applications && applications.length > 0) {
-      for (const email of relevantEmails) {
-        if (!email.classification) continue
+    const applications = applicationsData || []
 
-        const statusMap = {
-          'interview_invite': 'Interviewing',
-          'rejection': 'Rejected',
-          'offer': 'Offer',
-          'application_confirmation': 'Applied'
-        }
+    for (const email of relevantEmails) {
+      if (!email.classification) continue
 
-        const newStatus = statusMap[email.classification]
-        if (!newStatus) continue
+      const statusMap = {
+        'interview_invite': 'Interviewing',
+        'rejection': 'Rejected',
+        'offer': 'Offer',
+        'application_confirmation': 'Applied'
+      }
 
-        const matchRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
+      const newStatus = statusMap[email.classification]
+      if (!newStatus) continue
+
+      const matchRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: `You are helping match a recruiter email to a job application in a tracker.
+              Given an email and a list of applications, find which application this email is about.
+              Return ONLY a JSON object like this:
               {
-                role: 'system',
-                content: `You are helping match a recruiter email to a job application in a tracker.
-                Given an email and a list of applications, find which application this email is about.
-                Return ONLY a JSON object like this:
-                {
-                  "matched_id": "the id of the matching application or null",
-                  "reasoning": "why you chose this match"
-                }
-                If no application matches, return null for matched_id.`
-              },
-              {
-                role: 'user',
-                content: `Email:
+                "matched_id": "the id of the matching application or null",
+                "reasoning": "why you chose this match",
+                "extracted_company": "company name from the email",
+                "extracted_role": "job role/title from the email or null",
+                "extracted_platform": "platform like LinkedIn, Naukri, company website etc or null"
+              }
+              If no application matches, return null for matched_id.
+              Always extract company, role and platform from the email regardless of whether a match was found.`
+            },
+            {
+              role: 'user',
+              content: `Email:
 Subject: ${email.subject}
 From: ${email.from}
 Snippet: ${email.snippet}
 
 Applications in tracker:
 ${JSON.stringify(applications.map(a => ({ id: a.id, company: a.company, role: a.role })))}`
-              }
-            ],
-            response_format: { type: 'json_object' }
-          })
+            }
+          ],
+          response_format: { type: 'json_object' }
         })
+      })
 
-        const matchData = await matchRes.json()
-        if (!matchData.choices || matchData.choices.length === 0) continue
+      const matchData = await matchRes.json()
+      if (!matchData.choices || matchData.choices.length === 0) continue
 
-        let matchResult
-        try {
-          matchResult = JSON.parse(matchData.choices[0].message.content)
-        } catch {
-          continue
-        }
-        const matchedApp = applications.find(a => a.id === matchResult.matched_id)
+      let matchResult
+      try {
+        matchResult = JSON.parse(matchData.choices[0].message.content)
+      } catch {
+        continue
+      }
 
-        if (matchResult.matched_id) {
-          await supabase
-            .from('applications')
-            .update({ status: newStatus })
-            .eq('id', matchResult.matched_id)
+      const matchedApp = applications.find(a => a.id === matchResult.matched_id)
 
-          await supabase
-            .from('ai_events')
-            .insert({
-              user_id: userId,
-              company: matchedApp?.company || 'Unknown',
-              email_subject: email.subject,
-              classification: email.classification,
-              status_updated_to: newStatus
-            })
-        }
+      if (matchResult.matched_id) {
+        await supabase
+          .from('applications')
+          .update({ status: newStatus })
+          .eq('id', matchResult.matched_id)
+
+        await supabase
+          .from('ai_events')
+          .insert({
+            user_id: userId,
+            company: matchedApp?.company || 'Unknown',
+            email_subject: email.subject,
+            classification: email.classification,
+            status_updated_to: newStatus
+          })
+      } else {
+        const autoCompany = matchResult.extracted_company || email.company || 'Unknown'
+        const autoRole = matchResult.extracted_role || 'Unknown'
+        const autoPlatform = matchResult.extracted_platform || 'Auto-detected'
+
+        await supabase
+          .from('applications')
+          .insert({
+            user_id: userId,
+            company: autoCompany,
+            role: autoRole,
+            platform: autoPlatform,
+            date_applied: new Date().toISOString().split('T')[0],
+            status: newStatus
+          })
+
+        await supabase
+          .from('ai_events')
+          .insert({
+            user_id: userId,
+            company: autoCompany,
+            email_subject: email.subject,
+            classification: email.classification,
+            status_updated_to: `Auto-added → ${newStatus}`
+          })
       }
     }
   }
 
   if (relevantEmails.length === 0) {
-  await adminSupabase
-    .from('ai_events')
-    .insert({
-      user_id: userId,
-      company: 'System',
-      email_subject: 'Scan completed — no recruiter emails found',
-      classification: 'scan_complete',
-      status_updated_to: '—'
-    })
-}
+    await adminSupabase
+      .from('ai_events')
+      .insert({
+        user_id: userId,
+        company: 'System',
+        email_subject: 'Scan completed — no recruiter emails found',
+        classification: 'scan_complete',
+        status_updated_to: '—'
+      })
+  }
 
   return Response.json({ emails: relevantEmails })
 }
