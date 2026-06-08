@@ -286,5 +286,17 @@ ${JSON.stringify(applications.map(a => ({ id: a.id, company: a.company, role: a.
     }
   }
 
+  if (relevantEmails.length === 0) {
+  await adminSupabase
+    .from('ai_events')
+    .insert({
+      user_id: userId,
+      company: 'System',
+      email_subject: 'Scan completed — no recruiter emails found',
+      classification: 'scan_complete',
+      status_updated_to: '—'
+    })
+}
+
   return Response.json({ emails: relevantEmails })
 }

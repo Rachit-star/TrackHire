@@ -47,7 +47,8 @@ export default async function Dashboard() {
       'interview_invite': 'Interview Invite',
       'rejection': 'Rejection',
       'offer': 'Offer',
-      'application_confirmation': 'Confirmed'
+      'application_confirmation': 'Confirmed',
+      'scan_complete': 'Scan Complete',
     }
     return labels[classification] || classification
   }
@@ -57,7 +58,8 @@ export default async function Dashboard() {
       'interview_invite': '#FF5500',
       'rejection': '#DC2626',
       'offer': '#059669',
-      'application_confirmation': '#3B82F6'
+      'application_confirmation': '#3B82F6',
+      'scan_complete': '#64748B',
     }
     return colors[classification] || '#64748B'
   }
@@ -102,7 +104,9 @@ export default async function Dashboard() {
             {events.length > 0 ? events.map((event, i) => (
               <div key={i} className={styles.listItem}>
                 <div className={styles.itemMain}>
-                  <span className={styles.itemCompany}>{event.company}</span>
+                  <span className={styles.itemCompany}>
+                    {event.classification === 'scan_complete' ? '🔍 Scanner' : event.company}
+                  </span>
                   <span className={styles.itemDate}>
                     {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
@@ -111,7 +115,9 @@ export default async function Dashboard() {
                   className={styles.itemStatus}
                   style={{ color: getEventColor(event.classification) }}
                 >
-                  {getClassificationLabel(event.classification)} → {event.status_updated_to}
+                  {event.classification === 'scan_complete'
+                    ? event.email_subject
+                    : `${getClassificationLabel(event.classification)} → ${event.status_updated_to}`}
                 </span>
               </div>
             )) : (

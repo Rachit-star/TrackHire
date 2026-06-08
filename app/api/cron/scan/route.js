@@ -37,6 +37,7 @@ export async function GET(request) {
       results.push({ userId: token.user_id, error: err.message })
     }
   }
+  
 
   return Response.json({ scanned: results })
 }
