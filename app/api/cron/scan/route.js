@@ -51,7 +51,7 @@ export async function GET(request) {
 
   const { data: tokens } = await supabase
     .from('user_tokens')
-    .select('user_id, access_token')
+    .select('user_id, access_token, processed_email_ids')
 
   if (!tokens || tokens.length === 0) {
     return Response.json({ message: 'No users to scan' })
@@ -61,6 +61,7 @@ export async function GET(request) {
 
   for (const token of tokens) {
     const userId = token.user_id
+    const processedIds = token.processed_email_ids || []
 
     try {
       const validToken = await getValidToken(token.access_token, userId, supabase)
@@ -77,19 +78,20 @@ export async function GET(request) {
       const listData = await listRes.json()
 
       if (!listData.messages) {
-        await supabase.from('ai_events').insert({
-          user_id: userId,
-          company: 'System',
-          email_subject: 'Scan completed — no recruiter emails found',
-          classification: 'scan_complete',
-          status_updated_to: '—'
-        })
         results.push({ userId, emails: 0 })
         continue
       }
 
+      // Filter out already processed emails
+      const newMessages = listData.messages.filter(msg => !processedIds.includes(msg.id))
+
+      if (newMessages.length === 0) {
+        results.push({ userId, emails: 0, skipped: true })
+        continue
+      }
+
       const emails = await Promise.all(
-        listData.messages.map(async (msg) => {
+        newMessages.map(async (msg) => {
           const msgRes = await fetch(
             `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`,
             { headers: { Authorization: `Bearer ${validToken}` } }
@@ -169,6 +171,13 @@ export async function GET(request) {
       })
 
       const relevantEmails = classified.filter(e => e.relevant)
+
+      // Save all scanned message IDs as processed
+      const newProcessedIds = [...processedIds, ...emails.map(e => e.id)]
+      await supabase
+        .from('user_tokens')
+        .update({ processed_email_ids: newProcessedIds })
+        .eq('user_id', userId)
 
       if (relevantEmails.length === 0) {
         await supabase.from('ai_events').insert({
