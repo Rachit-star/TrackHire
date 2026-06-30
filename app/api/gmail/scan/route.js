@@ -125,7 +125,7 @@ export async function POST(request) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: 'qwen/qwen3-32b',
       messages: [
         {
           role: 'system',
@@ -232,7 +232,7 @@ export async function POST(request) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3-32b',
         messages: [
           {
             role: 'system',
