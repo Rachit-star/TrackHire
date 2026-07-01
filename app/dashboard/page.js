@@ -105,7 +105,7 @@ export default async function Dashboard() {
               <div key={i} className={styles.listItem}>
                 <div className={styles.itemMain}>
                   <span className={styles.itemCompany}>
-                    {event.classification === 'scan_complete' ? '🔍 Scanner' : event.company}
+                    {event.classification === 'scan_complete' ? 'Scanner' : event.company}
                   </span>
                   <span className={styles.itemDate}>
                     {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

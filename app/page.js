@@ -105,7 +105,7 @@ export default function Home() {
             </div>
             <div className={styles.statusControl}>
               <div className={styles.hardwareLedGreen}></div>
-              <span className={styles.statusTextGreen}>Offer Received ✓</span>
+              <span className={styles.statusTextGreen}>Offer Received</span>
             </div>
           </div>
 
