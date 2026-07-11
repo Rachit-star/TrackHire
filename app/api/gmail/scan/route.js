@@ -140,8 +140,14 @@ export async function POST(request) {
             "company": "company name or null",
             "action": "what the user should do next or null"
           }
-          relevant means it is a direct personal response from a company about a job application.
-          Mark newsletters, job alerts, and promotional emails as irrelevant.`
+          relevant means it is a DIRECT PERSONAL response from a specific company about YOUR specific job application.
+          Mark ALL of the following as irrelevant:
+          - Newsletters and digest emails
+          - Job alert emails from platforms like LinkedIn, Naukri, Propeers, Internshala, Unstop
+          - Promotional or marketing emails
+          - Platform notification emails
+          - Any email that is not a direct reply to a specific application you submitted
+          Only mark as relevant if a real human or automated system at a company is directly responding to your application.`
         },
         {
           role: 'user',
