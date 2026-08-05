@@ -86,6 +86,13 @@ export async function GET(request) {
       const newMessages = listData.messages.filter(msg => !processedIds.includes(msg.id))
 
       if (newMessages.length === 0) {
+        await supabase.from('ai_events').insert({
+          user_id: userId,
+          company: 'System',
+          email_subject: 'Scan completed — no new emails to process',
+          classification: 'scan_complete',
+          status_updated_to: '—'
+        })
         results.push({ userId, emails: 0, skipped: true })
         continue
       }
