@@ -154,7 +154,9 @@ export async function POST(request) {
           - Promotional or marketing emails
           - Platform notification emails
           - Any email that is not a direct reply to a specific application you submitted
-          Only mark as relevant if a real human or automated system at a company is directly responding to your application.`
+          - Bank notifications, OTPs, transaction alerts, or any financial emails
+          - Emails from banks, insurance companies, or financial institutions
+          Only mark as relevant if a real human or automated HR/recruiting system at a TECH or non-financial company is directly responding to your job application.`
         },
         {
           role: 'user',
