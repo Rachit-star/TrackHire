@@ -317,6 +317,9 @@ ${JSON.stringify(applications.map(a => ({ id: a.id, company: a.company, role: a.
     } catch (err) {
       results.push({ userId, error: err.message })
     }
+
+    // Small delay between users to avoid Groq rate limiting
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
 
   return Response.json({ scanned: results })
