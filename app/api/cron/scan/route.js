@@ -159,7 +159,7 @@ export async function GET(request) {
       const groqData = await groqRes.json()
 
       if (!groqData.choices || groqData.choices.length === 0) {
-        results.push({ userId, error: 'Groq classification failed' })
+        results.push({ userId, error: `Groq classification failed: ${JSON.stringify(groqData)}` })
         continue
       }
 
