@@ -162,6 +162,6 @@ The endpoint scans Gmail for all registered users, classifies emails, updates st
 
 ## Built by
 
-**Rachit** — First-year CSE student at Manipal University Jaipur
+**Rachit** —  CSE student at Manipal University Jaipur
 
 [GitHub](https://github.com/Rachit-star)
